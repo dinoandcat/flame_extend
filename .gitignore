@@ -1,0 +1,26 @@
+# Files and directories created by pub
+.dart_tool/
+.packages
+# Remove the following pattern if you wish to check in your lock file
+pubspec.lock
+
+# Conventional directory for build outputs
+build/
+
+# Directory created by dartdoc
+doc/api/
+
+.DS_Store
+.atom/
+.idea
+*.iml
+.pub/
+packages
+.flutter-plugins
+.vscode/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+android/
+ios/
+desktop/
