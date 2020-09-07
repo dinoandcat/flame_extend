@@ -37,8 +37,8 @@ mixin PositionMixin on Component {
     }
   }
 
-  Rect toRect() =>
-      Rect.fromLTWH(x - anchor.relativePosition.dx * width, y - anchor.relativePosition.dy * height, width, height);
+  Rect toRect() => Rect.fromLTWH(x - anchor.relativePosition.dx * width,
+      y - anchor.relativePosition.dy * height, width, height);
 
   void setByRect(Rect rect) {
     x = rect.left + anchor.relativePosition.dx * rect.width;
@@ -57,13 +57,18 @@ mixin PositionMixin on Component {
 
   void renderDebugMode(Canvas canvas) {
     canvas.drawRect(Rect.fromLTWH(0.0, 0.0, width, height), _debugPaint);
-    debugTextConfig.render(canvas, '''x: ${x.toStringAsFixed(2)} y:${y.toStringAsFixed(2)}''', Position(-50, -15));
+    debugTextConfig.render(
+        canvas,
+        '''x: ${x.toStringAsFixed(2)} y:${y.toStringAsFixed(2)}''',
+        Position(-50, -15));
 
     final rect = toRect();
     final dx = rect.right;
     final dy = rect.bottom;
     debugTextConfig.render(
-        canvas, '''x:${dx.toStringAsFixed(2)} y:${dy.toStringAsFixed(2)}''', Position(width - 50, height));
+        canvas,
+        '''x:${dx.toStringAsFixed(2)} y:${dy.toStringAsFixed(2)}''',
+        Position(width - 50, height));
   }
 
   void prepareCanvas(Canvas canvas) {

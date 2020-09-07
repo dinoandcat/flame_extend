@@ -1,8 +1,6 @@
 part of flame_extend;
 
 class Util {
-
-
   /// help init fullScreen,orientation...
   ///
   /// [fullScreen] Sets the app to be fullscreen(default true)
@@ -14,7 +12,8 @@ class Util {
     DeviceOrientation orientation,
     List<DeviceOrientation> orientations,
   }) async {
-    await Flame.init(bundle: bundle, fullScreen: fullScreen, orientation: orientation);
+    await Flame.init(
+        bundle: bundle, fullScreen: fullScreen, orientation: orientation);
     if (orientation == null && orientations != null) {
       await Flame.util.setOrientations(orientations);
     }
