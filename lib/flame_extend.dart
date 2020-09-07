@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/anchor.dart';
+import 'package:flame/box2d/box2d_component.dart';
 import 'package:flame/components/component.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/position.dart';
@@ -13,3 +14,4 @@ import 'package:flutter/services.dart';
 
 part 'src/mixin/position_mixin.dart';
 part 'src/util/util.dart';
+part 'src/component/default_box.dart';
