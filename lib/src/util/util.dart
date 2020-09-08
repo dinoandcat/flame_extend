@@ -12,10 +12,19 @@ class Util {
     DeviceOrientation orientation,
     List<DeviceOrientation> orientations,
   }) async {
-    await Flame.init(
-        bundle: bundle, fullScreen: fullScreen, orientation: orientation);
+    await Flame.init(bundle: bundle, fullScreen: fullScreen, orientation: orientation);
     if (orientation == null && orientations != null) {
       await Flame.util.setOrientations(orientations);
     }
   }
+
+  static List<DeviceOrientation> landscape() => <DeviceOrientation>[
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ];
+
+  static List<DeviceOrientation> portrait() => <DeviceOrientation>[
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ];
 }
