@@ -1,4 +1,4 @@
-import 'package:flame_extend/src/fsm/state.dart';
+part of  flame_extend;
 
 class StateMachine {
   State currentState;

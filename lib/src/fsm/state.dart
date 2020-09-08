@@ -1,4 +1,4 @@
-
+part of flame_extend;
 abstract class State<T> {
   T owner;
   State(this.owner);
