@@ -1,10 +1,8 @@
-part of  flame_extend;
+part of flame_extend;
 
 class StateMachine {
   State currentState;
-
   StateMachine(this.currentState);
-
   void changeState(State changeState) {
     if (currentState = null) {
       currentState.exit();

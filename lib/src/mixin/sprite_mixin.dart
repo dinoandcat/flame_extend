@@ -6,7 +6,8 @@ mixin SpriteMixin on PositionComponent {
 
   @override
   void render(Canvas c) {
-    sprite.render(c, width: width, height: height, overridePaint: overridePaint);
+    sprite.render(c,
+        width: width, height: height, overridePaint: overridePaint);
   }
 
   @override

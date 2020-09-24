@@ -1,18 +1,27 @@
 part of flame_extend;
 
 mixin Box2dBodyHelper on BodyComponent {
-  Shape createShape();
-
   BodyDef createBodyDef();
 
   FixtureDef createFixtureDef();
 
-  @override
-  void onMount() {
-    createBody();
+  Shape createShape();
+
+  double screenToWold(double src) {
+    return src / viewport.scale;
   }
 
-  void createBody() {
+  Position getBodyPosition() {
+    return Position.fromVector(viewport.getWorldToScreen(body.position));
+  }
+
+  @override
+  @mustCallSuper
+  void onMount() {
+    _createBody();
+  }
+
+  void _createBody() {
     final shape = createShape();
     final fixtureDef = createFixtureDef()
       ..shape = shape
@@ -22,5 +31,4 @@ mixin Box2dBodyHelper on BodyComponent {
       ..createFixtureFromFixtureDef(fixtureDef)
       ..userData = this;
   }
-
 }

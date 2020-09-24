@@ -22,4 +22,6 @@ class DefaultBox extends Box2DComponent {
 
   @override
   void initializeWorld() {}
+  @override
+  int priority() => PriorityLayer.GAME_INTERFACE;
 }

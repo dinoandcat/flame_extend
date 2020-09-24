@@ -1,0 +1,368 @@
+part of flame_extend;
+
+class b2Separator {
+  /*
+	* Convex Separator for Box2D Flash
+	*
+	* This class has been written by Antoan Angelov.
+	* It is designed to work with Erin Catto's Box2D physics library.
+	*
+	* Everybody can use this software for any purpose, under two restrictions:
+	* 1. You cannot claim that you wrote this software.
+	* 2. You can not remove or alter this notice.
+	*
+	*/
+
+  /*
+     * Separates a non-convex polygon into convex polygons and adds them as fixtures to the <code>body</code> parameter.<br/>
+     * There are some rules you should follow (otherwise you might get unexpected results) :
+     * <ul>
+     * <li>This class is specifically for non-convex polygons. If you want to create a convex polygon, you don't need to use this class - Box2D's <code>PolygonShape</code> class allows you to create convex shapes with the <code>setAsArray()</code>/<code>setAsVector()</code> method.</li>
+     * <li>The vertices must be in clockwise order.</li>
+     * <li>No three neighbouring points should lie on the same line segment.</li>
+     * <li>There must be no overlapping segments and no "holes".</li>
+     * </ul> <p/>
+     * @param body The Body, in which the new fixtures will be stored.
+     * @param fixtureDef A FixtureDef, containing all the properties (friction, density, etc.) which the new fixtures will inherit.
+     * @param verticesVec The vertices of the non-convex polygon, in clockwise order.
+     * @param scale <code>[optional]</code> The scale which you use to draw shapes in Box2D. The bigger the scale, the better the precision. The default value is 30.
+     * @see PolygonShape
+     * @see PolygonShape.SetAsArray()
+     * @see PolygonShape.SetAsVector()
+     * @see b2Fixture
+     */
+
+  void separate(Body body, FixtureDef fixtureDef, List<Vector2> verticesVec) {
+    double scale = 1000;
+    var i, j, m;
+    var n = verticesVec.length;
+    List<Vector2> vec = [];
+    List<List<Vector2>> figsVec;
+    PolygonShape polyShape;
+
+    for (i = 0; i < n; i++)
+      vec.add(Vector2(verticesVec[i].x * scale, verticesVec[i].y * scale));
+
+    figsVec = calcShapes(vec);
+    n = figsVec.length;
+
+    for (i = 0; i < n; i++) {
+      vec = figsVec[i];
+      verticesVec = List<Vector2>(vec.length);
+      m = vec.length;
+      for (j = 0; j < m; j++) {
+        verticesVec[j] = Vector2(vec[j].x / scale, -vec[j].y / scale);
+      }
+      polyShape = PolygonShape();
+      polyShape.set(verticesVec, verticesVec.length);
+      fixtureDef.shape = polyShape;
+      body.createFixtureFromFixtureDef(fixtureDef);
+    }
+  }
+
+  /**
+     * Checks whether the vertices in <code>verticesVec</code> can be properly distributed into the new fixtures (more specifically, it makes sure there are no overlapping segments and the vertices are in clockwise order).
+     * It is recommended that you use this method for debugging only, because it may cost more CPU usage.
+     * <p/>
+     * @param verticesVec The vertices to be validated.
+     * @return An integer which can have the following values:
+     * <ul>
+     * <li>0 if the vertices can be properly processed.</li>
+     * <li>1 If there are overlapping lines.</li>
+     * <li>2 if the points are <b>not</b> in clockwise order.</li>
+     * <li>3 if there are overlapping lines <b>and</b> the points are <b>not</b> in clockwise order.</li>
+     * </ul>
+     * */
+
+  int validate(List<Vector2> verticesVec) {
+    int i, j, j2, i2, i3;
+    double d;
+    int n = verticesVec.length, ret = 0;
+    bool fl, fl2 = false;
+
+    for (i = 0; i < n; i++) {
+      i2 = (i < n - 1 ? i + 1 : 0);
+      i3 = (i > 0 ? i - 1 : n - 1);
+
+      fl = false;
+      for (j = 0; j < n; j++) {
+        if (j != i && j != i2) {
+          if (!fl) {
+            d = det(verticesVec[i].x, verticesVec[i].y, verticesVec[i2].x,
+                verticesVec[i2].y, verticesVec[j].x, verticesVec[j].y);
+            if (d > 0) fl = true;
+          }
+
+          if (j != i3) {
+            j2 = (j < n - 1 ? j + 1 : 0);
+            if (hitSegment(
+                    verticesVec[i].x,
+                    verticesVec[i].y,
+                    verticesVec[i2].x,
+                    verticesVec[i2].y,
+                    verticesVec[j].x,
+                    verticesVec[j].y,
+                    verticesVec[j2].x,
+                    verticesVec[j2].y) !=
+                null) {
+              ret = 1;
+            }
+          }
+        }
+      }
+
+      if (!fl) {
+        fl2 = true;
+      }
+    }
+
+    if (fl2) {
+      if (ret == 1)
+        ret = 3;
+      else
+        ret = 2;
+    }
+
+    return ret;
+  }
+
+  List<List<Vector2>> calcShapes(List<Vector2> verticesVec) {
+    List<Vector2> vec;
+    int i, j, n, i1, i2, i3, j1, j2, k = 0, h = -1;
+    double d, t, dx, dy, minLen;
+    Vector2 p1, p2, p3, v1, v2, v, hitV = Vector2.zero();
+    List<Vector2> vec1, vec2;
+    bool isConvex;
+    List<List<Vector2>> figsVec = List<List<Vector2>>();
+    List<List<Vector2>> queue = List<List<Vector2>>();
+
+    // on met toutes les vertices a traiter dans la file
+    queue.add(verticesVec);
+
+    while (queue.length > 0) {
+      vec = queue[0];
+      n = vec.length;
+      isConvex = true;
+
+      //For each point in the array
+      for (i = 0; i < n; i++) {
+        // Compute neighbour indexes with wrapping
+        i1 = i;
+        i2 = (i < n - 1 ? i + 1 : i + 1 - n);
+        i3 = (i < n - 2 ? i + 2 : i + 2 - n);
+
+        // Get triangle vertices coordinates
+        p1 = vec[i1];
+        p2 = vec[i2];
+        p3 = vec[i3];
+
+        // Compute determinant of the triangle
+        d = det(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
+        // If triangle area is negative, it means the triangle is reversed.
+        // the shape is concave and must be cut
+        if (d < 0) {
+          isConvex = false;
+          minLen = double.maxFinite;
+
+          // Search in other vertices a point for slicing
+          for (j = 0; j < n; j++) {
+            // Discard starting index and concave point index
+            if (j != i1 && j != i2) {
+              j1 = j;
+              j2 = (j < n - 1 ? j + 1 : 0);
+
+              v1 = vec[j1];
+              v2 = vec[j2];
+
+              v = hitRay(p1.x, p1.y, p2.x, p2.y, v1.x, v1.y, v2.x, v2.y);
+
+              if (v != null) {
+                dx = p2.x - v.x;
+                dy = p2.y - v.y;
+                t = dx * dx + dy * dy;
+
+                if (t < minLen) {
+                  h = j1;
+                  k = j2;
+                  hitV = v;
+                  minLen = t;
+                }
+              }
+            }
+          }
+
+          if (minLen == double.maxFinite) {
+            err();
+          }
+
+          vec1 = <Vector2>[];
+          vec2 = <Vector2>[];
+
+          j1 = h;
+          j2 = k;
+          v1 = vec[j1];
+          v2 = vec[j2];
+
+          if (!pointsMatch(hitV.x, hitV.y, v2.x, v2.y)) {
+            vec1.add(hitV);
+          }
+          if (!pointsMatch(hitV.x, hitV.y, v1.x, v1.y)) {
+            vec2.add(hitV);
+          }
+
+          h = -1;
+          k = i1;
+          while (true) {
+            if (k != j2) {
+              vec1.add(vec[k]);
+            } else {
+              if (h < 0 || h >= n) {
+                err();
+              }
+              if (!isOnSegment(v2.x, v2.y, vec[h].x, vec[h].y, p1.x, p1.y)) {
+                vec1.add(vec[k]);
+              }
+              break;
+            }
+
+            h = k;
+            if (k - 1 < 0)
+              k = n - 1;
+            else
+              k--;
+          }
+
+          reverse(vec1);
+
+          h = -1;
+          k = i2;
+          while (true) {
+            if (k != j1)
+              vec2.add(vec[k]);
+            else {
+              if (h < 0 || h >= n) err();
+              if (k == j1 &&
+                  !isOnSegment(v1.x, v1.y, vec[h].x, vec[h].y, p2.x, p2.y))
+                vec2.add(vec[k]);
+              break;
+            }
+
+            h = k;
+            if (k + 1 > n - 1)
+              k = 0;
+            else
+              k++;
+          }
+
+          queue.add(vec1);
+          queue.add(vec2);
+          queue.remove(0);
+
+          break;
+        }
+      }
+
+      if (isConvex) {
+        figsVec.add(queue[0]);
+        queue.remove(0);
+      } else {
+        debugPrint("b2SeparatorFound concave shape");
+      }
+    }
+    return figsVec;
+  }
+
+  Vector2 hitRay(double x1, double y1, double x2, double y2, double x3,
+      double y3, double x4, double y4) {
+    double t1 = x3 - x1;
+    double t2 = y3 - y1;
+    double t3 = x2 - x1;
+    double t4 = y2 - y1;
+    double t5 = x4 - x3;
+    double t6 = y4 - y3;
+    double t7 = t4 * t5 - t3 * t6;
+    double a;
+
+    if (t7 != 0)
+      a = (t5 * t2 - t6 * t1) / t7;
+    else
+      a = 0;
+    double px = x1 + a * t3, py = y1 + a * t4;
+    bool b1 = isOnSegment(x2, y2, x1, y1, px, py);
+    bool b2 = isOnSegment(px, py, x3, y3, x4, y4);
+
+    if (b1 && b2) {
+      return Vector2(px, py);
+    }
+
+    return null;
+  }
+
+  Vector2 hitSegment(double x1, double y1, double x2, double y2, double x3,
+      double y3, double x4, double y4) {
+    double t1 = x3 - x1,
+        t2 = y3 - y1,
+        t3 = x2 - x1,
+        t4 = y2 - y1,
+        t5 = x4 - x3,
+        t6 = y4 - y3,
+        t7 = t4 * t5 - t3 * t6,
+        a;
+
+    a = (t5 * t2 - t6 * t1) / t7;
+    double px = x1 + a * t3, py = y1 + a * t4;
+    bool b1 = isOnSegment(px, py, x1, y1, x2, y2);
+    bool b2 = isOnSegment(px, py, x3, y3, x4, y4);
+
+    if (b1 && b2) {
+      return Vector2(px, py);
+    }
+
+    return null;
+  }
+
+  bool isOnSegment(
+      double px, double py, double x1, double y1, double x2, double y2) {
+    final bool b1 = (x1 + 0.1 >= px && px >= x2 - 0.1) ||
+        (x1 - 0.1 <= px && px <= x2 + 0.1);
+    final bool b2 = (y1 + 0.1 >= py && py >= y2 - 0.1) ||
+        (y1 - 0.1 <= py && py <= y2 + 0.1);
+    final onLine = isOnLine(px, py, x1, y1, x2, y2);
+    return b1 && b2 && onLine;
+  }
+
+  bool pointsMatch(double x1, double y1, double x2, double y2) {
+    double dx = x2 >= x1 ? x2 - x1 : x1 - x2, dy = y2 >= y1 ? y2 - y1 : y1 - y2;
+    return dx < 0.1 && dy < 0.1;
+  }
+
+  bool isOnLine(
+      double px, double py, double x1, double y1, double x2, double y2) {
+    if (x2 - x1 > 0.1 || x1 - x2 > 0.1) {
+      double a = (y2 - y1) / (x2 - x1),
+          possibleY = a * (px - x1) + y1,
+          diff = possibleY > py ? possibleY - py : py - possibleY;
+      return diff < 0.1;
+    }
+
+    return px - x1 < 0.1 || x1 - px < 0.1;
+  }
+
+  double det(double x1, double y1, double x2, double y2, double x3, double y3) {
+    return x1 * y2 + x2 * y3 + x3 * y1 - y1 * x2 - y2 * x3 - y3 * x1;
+  }
+
+  void err() {
+    throw UnsupportedError("A problem has occurred.");
+  }
+
+  void reverse(List<Vector2> vec1) {
+    Vector2 o;
+    for (int i = 0; i < vec1.length / 2; i++) {
+      o = vec1[vec1.length - 1 - i];
+      vec1[vec1.length - 1 - i] = vec1[i];
+      vec1[i] = o;
+    }
+  }
+}

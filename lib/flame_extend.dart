@@ -5,18 +5,24 @@ import 'dart:ui';
 
 import 'package:box2d_flame/box2d.dart' hide Position;
 import 'package:flame/anchor.dart';
-import 'package:flame/box2d/box2d_component.dart' ;
+import 'package:flame/box2d/box2d_component.dart';
 import 'package:flame/components/component.dart';
+import 'package:flame/components/joystick/joystick_events.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/position.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/text_config.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-
+import 'package:flutter/widgets.dart';
+import 'package:flame/components/mixins/has_game_ref.dart';
+import 'package:flame/game/base_game.dart';
+//util
 part 'src/util/util.dart';
+part 'src/util/priority_layer.dart';
+part 'src/util/b2Separator.dart';
 //component
-part 'src/component/default_box.dart';
+part 'src/box2d/default_box.dart';
 //behavior tree
 part 'src/behavior_tree/behavior.dart';
 part 'src/behavior_tree/behavior_tree_builder.dart';

@@ -3,14 +3,15 @@ import 'dart:ui';
 import 'package:box2d_flame/box2d.dart';
 import 'package:flutter/material.dart' hide Transform, TextStyle;
 
+//TODO
 class Box2dDraw extends DebugDraw {
   Canvas canvas;
-  Paint paint = Paint()
-    ..color = Colors.green;
+  Paint paint = Paint()..color = Colors.green;
   Color fillColor;
   Color strokeColor;
 
-  Box2dDraw(ViewportTransform viewportTransform, {fillColor, storeColor}) : super(viewportTransform);
+  Box2dDraw(ViewportTransform viewportTransform, {fillColor, storeColor})
+      : super(viewportTransform);
 
   @override
   void drawCircle(Vector2 center, double radius, Color3i color) {
@@ -20,16 +21,20 @@ class Box2dDraw extends DebugDraw {
   }
 
   @override
-  void drawParticles(List<Vector2> centers, double radius, List<ParticleColor> colors, int count) {
+  void drawParticles(List<Vector2> centers, double radius,
+      List<ParticleColor> colors, int count) {
     // 画点
     for (int i = 0; i < count; i++) {
-      paint.color = Color.fromARGB(colors[i].a, colors[i].r, colors[i].g, colors[i].b);
-      canvas.drawPoints(PointMode.points, [convertVector2Offset(centers[i])], paint);
+      paint.color =
+          Color.fromARGB(colors[i].a, colors[i].r, colors[i].g, colors[i].b);
+      canvas.drawPoints(
+          PointMode.points, [convertVector2Offset(centers[i])], paint);
     }
   }
 
   @override
-  void drawParticlesWireframe(List<Vector2> centers, double radius, List<ParticleColor> colors, int count) {
+  void drawParticlesWireframe(List<Vector2> centers, double radius,
+      List<ParticleColor> colors, int count) {
     // TODO: implement drawParticlesWireframe
     throw "Unimplemented";
   }
@@ -37,27 +42,29 @@ class Box2dDraw extends DebugDraw {
   @override
   void drawPoint(Vector2 argPoint, double argRadiusOnScreen, Color3i argColor) {
     _setColor(argColor);
-    canvas.drawPoints(PointMode.points, [Offset(argPoint.x, argPoint.y)], paint);
+    canvas.drawPoints(
+        PointMode.points, [Offset(argPoint.x, argPoint.y)], paint);
   }
 
   @override
   void drawSegment(Vector2 p1, Vector2 p2, Color3i color) {
     _setColor(color);
-    var path = Path()
-      ..moveTo(p1.x, p1.y);
+    var path = Path()..moveTo(p1.x, p1.y);
     path.lineTo(p2.x, p2.y);
     canvas.drawPath(path, paint);
   }
 
   @override
-  void drawSolidCircle(Vector2 center, double radius, Vector2 axis, Color3i color) {
+  void drawSolidCircle(
+      Vector2 center, double radius, Vector2 axis, Color3i color) {
     _setColor(color);
     paint.style = PaintingStyle.fill;
     drawCircle(center, radius, color);
   }
 
   @override
-  void drawSolidPolygon(List<Vector2> vertices, int vertexCount, Color3i color) {
+  void drawSolidPolygon(
+      List<Vector2> vertices, int vertexCount, Color3i color) {
     _setColor(color);
     paint.style = PaintingStyle.stroke;
     _drawPolygon(vertices, vertexCount, color);
@@ -67,10 +74,10 @@ class Box2dDraw extends DebugDraw {
   void drawStringXY(double x, double y, String s, Color3i color) {
     _setColor(color);
     //TODO set ParagraphStyle
-    var pb=ParagraphBuilder(ParagraphStyle())
+    var pb = ParagraphBuilder(ParagraphStyle())
       ..addText(s)
       ..pushStyle(TextStyle(color: convertColor3i2Color(color)));
-    canvas.drawParagraph(pb.build(), Offset(x,y));
+    canvas.drawParagraph(pb.build(), Offset(x, y));
   }
 
   /// Draw a transform. Choose your own length scale
@@ -80,7 +87,6 @@ class Box2dDraw extends DebugDraw {
   drawTransform(Transform xf, Color3i color) {
     _setColor(color);
     // TODO(rupertk): Draw rotation representation (drawCircle axis parameter?)
-
   }
 
   @override
@@ -118,4 +124,5 @@ class Box2dDraw extends DebugDraw {
 
 Offset convertVector2Offset(Vector2 vector2) => Offset(vector2.x, vector2.y);
 
-Color convertColor3i2Color(Color3i color3i) => Color.fromRGBO(color3i.x, color3i.y, color3i.z, 1.0);
+Color convertColor3i2Color(Color3i color3i) =>
+    Color.fromRGBO(color3i.x, color3i.y, color3i.z, 1.0);

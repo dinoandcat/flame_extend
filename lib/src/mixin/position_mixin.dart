@@ -1,12 +1,15 @@
 part of flame_extend;
 
-mixin PositionMixin on Component {
+/// PositionMixin
+///
+///
+mixin PositionMixin<T extends BaseGame> on Component, HasGameRef<T> {
   double x = 0.0, y = 0.0, angle = 0.0;
   double width = 0.0, height = 0.0;
   Anchor anchor = Anchor.topLeft;
   bool renderFlipX = false;
   bool renderFlipY = false;
-  bool debugMode = false;
+  bool get debugMode => gameRef?.debugMode() ?? false;
 
   Color get debugColor => const Color(0xFFFF00FF);
 
